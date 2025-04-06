@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Caesar Cipher</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                margin: 20px;
+            }
+            input,
+            button {
+                margin: 5px;
+                padding: 10px;
+                font-size: 16px;
+            }
+            #keyInput {
+                display: inline-block;
+            }
+            #result {
+                margin-top: 10px;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <bodybr>
+        <h2>Caesar Cipher</h2>
+        <label for="text">Text:</label>
+        <input type="text" id="text" placeholder="Enter text" />
+        <br />
+
+        <div id="keyInput">
+            <label for="key">Key:</label>
+            <input type="number" id="key" value="3" />
+        </div>
+        <br />
+
+        <button onclick="sendRequest('GET')">Encrypt (GET)</button>
+        <button onclick="sendRequest('POST')">Encrypt (POST)</button>
+        <button onclick="toggleMode()">Switch to Decryption</button>
+
+        <div id="result"></div>
+
+        <script>
+            let isEncrypting = true;
+
+            function sendRequest(method) {
+                const text = document.getElementById("text").value;
+                const key = document.getElementById("key").value;
+                const url = isEncrypting
+                    ? "http://localhost:8000/encrypt"
+                    : "http://localhost:8000/decrypt";
+                let options = {};
+                let requestUrl = url;
+
+                if (method === "GET") {
+                    requestUrl += isEncrypting
+                        ? `?text=${encodeURIComponent(text)}&key=${key}`
+                        : `?text=${encodeURIComponent(text)}`;
+                } else {
+                    options = {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(
+                            isEncrypting
+                                ? { text, key: parseInt(key, 10) }
+                                : { text },
+                        ),
+                    };
+                }
+
+                fetch(requestUrl, options)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        document.getElementById("result").innerText =
+                            `Result: ${JSON.stringify(data)}`;
+                    })
+                    .catch((error) => console.error("Error:", error));
+            }
+
+            function toggleMode() {
+                isEncrypting = !isEncrypting;
+                document.getElementById("keyInput").style.display = isEncrypting
+                    ? "inline-block"
+                    : "none";
+            }
+        </script>
+    </body>
+</html>
